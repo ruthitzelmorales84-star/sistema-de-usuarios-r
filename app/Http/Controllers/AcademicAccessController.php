@@ -73,6 +73,9 @@ class AcademicAccessController extends Controller
         if ($this->isStudentLocked($request)) {
             abort(403, 'Como alumno no puedes acceder al rol de profesor.');
         }
+        if (! $this->isAdmin($request) && $request->user()?->role !== 'profesor') {
+            abort(403, 'Solo profesores y administradores pueden verificar este rol.');
+        }
 
         $data = $request->validate([
             'email' => ['required', 'email'],
@@ -82,6 +85,7 @@ class AcademicAccessController extends Controller
 
         $request->session()->put('academic_2fa_email', $data['email']);
         $request->session()->put('academic_2fa_code', $code);
+        $request->session()->put('academic_2fa_expires_at', now()->addMinutes(5)->timestamp);
         $request->session()->forget('academic_2fa_verified');
 
         Mail::raw(
@@ -94,7 +98,7 @@ class AcademicAccessController extends Controller
 
         return redirect()
             ->route('academic.professor.form')
-            ->with('status', 'Se envió un código de verificación a ' . $data['email'] . '.');
+            ->with('status', 'Se envió un código de verificación a '.$data['email'].'.');
     }
 
     public function verifyProfessorCode(Request $request)
@@ -108,8 +112,9 @@ class AcademicAccessController extends Controller
         ]);
 
         $expectedCode = $request->session()->get('academic_2fa_code');
+        $expiresAt = (int) $request->session()->get('academic_2fa_expires_at', 0);
 
-        if (! $expectedCode || trim($data['code']) !== $expectedCode) {
+        if (! $expectedCode || $expiresAt < now()->timestamp || trim($data['code']) !== $expectedCode) {
             return back()
                 ->withInput()
                 ->withErrors(['code' => 'El código ingresado no es válido o ya expiró.']);

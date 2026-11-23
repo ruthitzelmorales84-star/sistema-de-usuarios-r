@@ -3,9 +3,11 @@
 use App\Http\Controllers\AcademicAccessController;
 use App\Http\Controllers\AcademicRecordController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComputerReservationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TicTacToeController;
 use App\Http\Controllers\UserController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -24,13 +26,13 @@ Route::get('/sistema-administracion', function (Request $request) {
 
 Route::middleware('auth')->prefix('juego-multijugador')->name('multiplayer.')->group(function () {
     Route::get('/', [TicTacToeController::class, 'index'])->name('index');
-    Route::post('/crear', [TicTacToeController::class, 'create'])->name('create');
-    Route::post('/{game}/unirse', [TicTacToeController::class, 'join'])->name('join');
+    Route::post('/crear', [TicTacToeController::class, 'create'])->middleware('role:jugador,admin')->name('create');
+    Route::post('/{game}/unirse', [TicTacToeController::class, 'join'])->middleware('role:jugador,admin')->name('join');
     Route::get('/{game}', [TicTacToeController::class, 'show'])->name('show');
     Route::get('/{game}/estado', [TicTacToeController::class, 'state'])->name('state');
-    Route::post('/{game}/mover', [TicTacToeController::class, 'move'])->name('move');
-    Route::post('/{game}/abandonar', [TicTacToeController::class, 'abandon'])->name('abandon');
-    Route::post('/{game}/cancelar', [TicTacToeController::class, 'cancel'])->name('cancel');
+    Route::post('/{game}/mover', [TicTacToeController::class, 'move'])->middleware('role:jugador,admin')->name('move');
+    Route::post('/{game}/abandonar', [TicTacToeController::class, 'abandon'])->middleware('role:jugador,admin')->name('abandon');
+    Route::post('/{game}/cancelar', [TicTacToeController::class, 'cancel'])->middleware('role:admin')->name('cancel');
 
     Route::post('/usuarios', [TicTacToeController::class, 'storeUser'])->name('users.store');
     Route::put('/usuarios/{user}', [TicTacToeController::class, 'updateUser'])->name('users.update');
@@ -63,6 +65,17 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/verificacion-admin', [AuthController::class, 'showTwoFactorChallenge'])->name('admin.2fa.challenge');
 Route::post('/verificacion-admin', [AuthController::class, 'verifyTwoFactor'])->name('admin.2fa.verify');
 
+Route::middleware('auth')->prefix('reservaciones')->name('reservations.')->group(function () {
+    Route::get('/', [ComputerReservationController::class, 'index'])->name('index');
+    Route::middleware('role:admin')->group(function () {
+        Route::post('/equipos', [ComputerReservationController::class, 'storeEquipment'])->name('equipment.store');
+        Route::put('/equipos/{computer}', [ComputerReservationController::class, 'updateEquipment'])->name('equipment.update');
+        Route::delete('/equipos/{computer}', [ComputerReservationController::class, 'destroyEquipment'])->name('equipment.destroy');
+    });
+    Route::middleware('role:estudiante,alumno')->post('/equipos/{computer}/reservar', [ComputerReservationController::class, 'reserve'])->name('reserve');
+    Route::post('/{reservation}/cancelar', [ComputerReservationController::class, 'cancel'])->name('cancel');
+});
+
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboards.admin');
@@ -93,7 +106,7 @@ Route::get('/users', function (Request $request) {
     }
 
     return app(UserController::class)->index($request);
-})->name('users.index');
+})->middleware(['auth', 'role:empleado,admin'])->name('users.index');
 
 Route::get('/users/create', function (Request $request) {
     if (! Auth::check()) {
@@ -101,17 +114,17 @@ Route::get('/users/create', function (Request $request) {
     }
 
     return app(UserController::class)->create($request);
-})->name('users.create');
+})->middleware(['auth', 'role:empleado,admin'])->name('users.create');
 
-Route::post('/users', [UserController::class, 'store'])->middleware('auth')->name('users.store');
+Route::post('/users', [UserController::class, 'store'])->middleware(['auth', 'role:empleado,admin'])->name('users.store');
 
-Route::get('/users/{user}/edit', [UserController::class, 'edit'])->middleware('auth')->name('users.edit');
-Route::put('/users/{user}', [UserController::class, 'update'])->middleware('auth')->name('users.update');
-Route::delete('/users/{user}', [UserController::class, 'destroy'])->middleware('auth')->name('users.destroy');
-Route::delete('/users/{id}/force', [UserController::class, 'forceDestroy'])->middleware('auth')->name('users.force-destroy');
-Route::post('/users/{id}/restore', [UserController::class, 'restore'])->middleware('auth')->name('users.restore');
+Route::get('/users/{user}/edit', [UserController::class, 'edit'])->middleware(['auth', 'role:empleado,admin'])->name('users.edit');
+Route::put('/users/{user}', [UserController::class, 'update'])->middleware(['auth', 'role:empleado,admin'])->name('users.update');
+Route::delete('/users/{user}', [UserController::class, 'destroy'])->middleware(['auth', 'role:admin'])->name('users.destroy');
+Route::delete('/users/{id}/force', [UserController::class, 'forceDestroy'])->middleware(['auth', 'role:admin'])->name('users.force-destroy');
+Route::post('/users/{id}/restore', [UserController::class, 'restore'])->middleware(['auth', 'role:admin'])->name('users.restore');
 
-Route::get('/users/{user}', function (Request $request, \App\Models\User $user) {
+Route::get('/users/{user}', function (Request $request, User $user) {
     if (! Auth::check()) {
         return redirect()->route('login', ['intended' => $request->fullUrl()]);
     }

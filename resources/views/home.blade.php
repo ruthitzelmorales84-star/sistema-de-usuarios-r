@@ -91,8 +91,10 @@
 
         <div class="actions">
             <a href="{{ url('/sistema-usuarios') }}" class="btn-module">Sistema de usuarios</a>
+            <a href="{{ route('modules.academic') }}" class="btn-module btn-secondary">Sistema académico</a>
             <a href="{{ url('/sistema-administracion') }}" class="btn-module btn-secondary">Sistema de administración</a>
             <a href="{{ route('products.index') }}" class="btn-module btn-secondary">Sistema de gestión de productos</a>
+            <a href="{{ route('reservations.index') }}" class="btn-module btn-secondary">Reservación de equipos</a>
             <a href="{{ url('/juego-multijugador') }}" class="btn-module btn-secondary">Juego multijugador</a>
         </div>
     </main>

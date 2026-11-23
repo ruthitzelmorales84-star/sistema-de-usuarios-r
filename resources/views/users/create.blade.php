@@ -103,6 +103,10 @@
                 <select id="role" name="role" required>
                     <option value="empleado" {{ old('role') === 'empleado' ? 'selected' : '' }}>empleado</option>
                     <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>admin</option>
+                    <option value="profesor" {{ old('role') === 'profesor' ? 'selected' : '' }}>profesor</option>
+                    <option value="alumno" {{ old('role') === 'alumno' ? 'selected' : '' }}>alumno</option>
+                    <option value="estudiante" {{ old('role') === 'estudiante' ? 'selected' : '' }}>estudiante</option>
+                    <option value="jugador" {{ old('role') === 'jugador' ? 'selected' : '' }}>jugador</option>
                 </select>
             </div>
 

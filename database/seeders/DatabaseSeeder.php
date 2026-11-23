@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +16,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $users = [
+            ['name' => 'Administrador', 'email' => 'admin@example.com', 'role' => 'admin'],
+            ['name' => 'Empleado', 'email' => 'empleado@example.com', 'role' => 'empleado'],
+            ['name' => 'Profesor', 'email' => 'profesor@example.com', 'role' => 'profesor'],
+            ['name' => 'Alumno', 'email' => 'alumno@example.com', 'role' => 'alumno'],
+            ['name' => 'Estudiante', 'email' => 'estudiante@example.com', 'role' => 'estudiante'],
+            ['name' => 'Jugador', 'email' => 'jugador@example.com', 'role' => 'jugador'],
+        ];
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach ($users as $data) {
+            User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'password' => Hash::make('password'),
+                    'role' => $data['role'],
+                ]
+            );
+        }
+
+        $this->call(ProductCatalogSeeder::class);
     }
 }

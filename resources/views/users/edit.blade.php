@@ -110,7 +110,7 @@
 
             @php
                 $selectedRole = old('role', $user->role);
-                $roles = ['admin', 'empleado', 'profesor', 'alumno'];
+                $roles = ['admin', 'empleado', 'profesor', 'alumno', 'estudiante', 'jugador'];
                 if ($selectedRole && ! in_array($selectedRole, $roles, true)) {
                     $roles[] = $selectedRole;
                 }

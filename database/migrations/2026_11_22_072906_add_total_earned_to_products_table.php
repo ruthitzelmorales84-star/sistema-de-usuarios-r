@@ -1,11 +1,16 @@
-if (! Schema::hasColumn('products', 'sold_count')) {
-    Schema::table('products', function (Blueprint $table) {
-        $table->unsignedInteger('sold_count')->default(0)->after('stock');
-    });
-}
+<?php
 
-if (! Schema::hasColumn('products', 'total_earned')) {
-    Schema::table('products', function (Blueprint $table) {
-        $table->decimal('total_earned', 12, 2)->default(0)->after('sold_count');
-    });
-}
+use Illuminate\Database\Migrations\Migration;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        //
+    }
+
+    public function down(): void
+    {
+        //
+    }
+};

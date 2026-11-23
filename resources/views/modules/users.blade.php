@@ -57,12 +57,12 @@
         <h1>Sistema de usuarios</h1>
         <p>
             Sesión activa: <strong>{{ auth()->user()->email }}</strong>
-            ({{ auth()->user()->role === 'admin' ? 'Administrador' : 'Consulta' }})
+            ({{ auth()->user()->role === 'admin' ? 'Administrador' : (auth()->user()->role === 'empleado' ? 'Empleado' : 'Usuario') }})
         </p>
         <div class="actions">
             <a href="{{ route('users.index') }}" class="btn">Ver lista de usuarios</a>
 
-            @if(auth()->user()?->role === 'admin')
+            @if(in_array(auth()->user()?->role, ['admin', 'empleado'], true))
                 <a href="{{ route('users.create') }}" class="btn">Agregar usuario</a>
             @endif
 

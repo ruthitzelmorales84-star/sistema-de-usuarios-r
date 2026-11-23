@@ -26,6 +26,21 @@ class UserController extends Controller
         return null;
     }
 
+    private function ensureCreateUpdate(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return redirect()->route('login', ['intended' => $request->fullUrl()]);
+        }
+
+        if (! in_array($user->role, ['admin', 'empleado'], true)) {
+            abort(403, 'Solo administradores y empleados pueden gestionar usuarios.');
+        }
+
+        return null;
+    }
+
     private function recordMovement(Request $request, string $action, string $description): void
     {
         $actor = Auth::user()?->name ?? 'Sistema';
@@ -77,7 +92,7 @@ class UserController extends Controller
 
     public function create(Request $request)
     {
-        $guardRedirect = $this->ensureAdmin($request);
+        $guardRedirect = $this->ensureCreateUpdate($request);
         if ($guardRedirect) {
             return $guardRedirect;
         }
@@ -87,7 +102,7 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $guardRedirect = $this->ensureAdmin($request);
+        $guardRedirect = $this->ensureCreateUpdate($request);
         if ($guardRedirect) {
             return $guardRedirect;
         }
@@ -101,7 +116,7 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->whereNull('deleted_at'),
             ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'empleado', 'profesor', 'alumno'])],
+            'role' => ['required', Rule::in(['admin', 'empleado', 'profesor', 'alumno', 'estudiante', 'jugador'])],
         ]);
 
         $createdUser = User::create($validated);
@@ -122,7 +137,7 @@ class UserController extends Controller
 
     public function edit(Request $request, User $user)
     {
-        $guardRedirect = $this->ensureAdmin($request);
+        $guardRedirect = $this->ensureCreateUpdate($request);
         if ($guardRedirect) {
             return $guardRedirect;
         }
@@ -132,7 +147,7 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $guardRedirect = $this->ensureAdmin($request);
+        $guardRedirect = $this->ensureCreateUpdate($request);
         if ($guardRedirect) {
             return $guardRedirect;
         }
@@ -146,7 +161,7 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id)->whereNull('deleted_at'),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'empleado', 'profesor', 'alumno'])],
+            'role' => ['required', Rule::in(['admin', 'empleado', 'profesor', 'alumno', 'estudiante', 'jugador'])],
         ]);
 
         $oldName = $user->name;

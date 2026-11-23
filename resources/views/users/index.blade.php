@@ -130,12 +130,14 @@
         <div class="top-bar">
             <h1>Lista de usuarios</h1>
             <div class="actions-group">
-                @if(auth()->user()?->role === 'admin')
+                @if(in_array(auth()->user()?->role, ['admin', 'empleado'], true))
                     <a href="{{ route('users.create') }}" class="btn">Nuevo usuario</a>
                 @endif
-                <button type="button" id="toggleHistorialBtn" onclick="toggleHistorialSection()" class="btn btn-secondary">
-                    Historial ({{ $totalEliminados }} / {{ $totalMovimientos }} mov.)
-                </button>
+                @if(auth()->user()?->role === 'admin')
+                    <button type="button" id="toggleHistorialBtn" onclick="toggleHistorialSection()" class="btn btn-secondary">
+                        Historial ({{ $totalEliminados }} / {{ $totalMovimientos }} mov.)
+                    </button>
+                @endif
                 <a href="{{ route('modules.users') }}" class="btn btn-secondary">Módulo de usuarios</a>
                 <a href="{{ route('home') }}" class="btn">Volver al inicio</a>
             </div>
@@ -144,8 +146,10 @@
         <div class="mode-badge">
             @if(auth()->user()?->role === 'admin')
                 Modo Administrador (acceso completo: editar, eliminar e historial)
+            @elseif(auth()->user()?->role === 'empleado')
+                Modo Empleado (puedes consultar, registrar y editar; no puedes eliminar)
             @else
-                Modo Lectura: solo puedes ver usuarios y movimientos (sin editar historial ni eliminar)
+                Modo Lectura: solo puedes consultar usuarios
             @endif
         </div>
 
@@ -164,7 +168,7 @@
                     <th>Nombre</th>
                     <th>Correo</th>
                     <th>Rol</th>
-                    @if(auth()->user()?->role === 'admin')
+                    @if(in_array(auth()->user()?->role, ['admin', 'empleado'], true))
                         <th>Acciones</th>
                     @endif
                 </tr>
@@ -176,28 +180,30 @@
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->role ?? 'usuario' }}</td>
-                        @if(auth()->user()?->role === 'admin')
+                        @if(in_array(auth()->user()?->role, ['admin', 'empleado'], true))
                             <td>
                                 <div class="actions-group">
                                     <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">Editar</a>
-
-                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar/deshabilitar este usuario?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-delete">Eliminar</button>
-                                    </form>
+                                    @if(auth()->user()?->role === 'admin')
+                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar/deshabilitar este usuario?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-delete">Eliminar</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ auth()->user()?->role === 'admin' ? 5 : 4 }}">No hay usuarios registrados todavía.</td>
+                        <td colspan="{{ in_array(auth()->user()?->role, ['admin', 'empleado'], true) ? 5 : 4 }}">No hay usuarios registrados todavía.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
 
+        @if(auth()->user()?->role === 'admin')
         <div id="historialSection" style="display: none;">
             <h2>Historial / Usuarios deshabilitados</h2>
             @if (isset($trashedUsers) && $trashedUsers->count() > 0)
@@ -280,6 +286,7 @@
                 <p class="empty-msg">No hay movimientos registrados todavía.</p>
             @endif
         </div>
+        @endif
     </div>
 
     <script>
