@@ -40,7 +40,7 @@
             display: inline-block;
         }
         .btn-prof { background-color: #6f42c1; color: #ffffff; }
-        .btn-alum { background-color: #3730a3; color: #ffffff; }
+        .btn-student { background-color: #3730a3; color: #ffffff; }
         .btn-back { background-color: #2d2b3e; color: #e5e7eb; margin-top: 8px; }
     </style>
 </head>
@@ -50,12 +50,16 @@
         <p>¿Cómo deseas ingresar?</p>
 
         <div class="options">
-            <a href="{{ route('academic.professor.form') }}" class="btn btn-prof">Soy Profesor (verificar código por correo)</a>
+            @if($isAdmin || $isProfessorLocked)
+                <a href="{{ route('academic.professor.form') }}" class="btn btn-prof">Soy Profesor (verificar código por correo)</a>
+            @endif
 
-            <form action="{{ route('academic.student.enter') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-alum">Soy Alumno (solo consulta)</button>
-            </form>
+            @if($isAdmin || $isStudentLocked)
+                <form action="{{ route('academic.student.enter') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-student">Soy Estudiante (solo consulta)</button>
+                </form>
+            @endif
 
             <a href="{{ route('home') }}" class="btn btn-back">Volver al inicio</a>
         </div>

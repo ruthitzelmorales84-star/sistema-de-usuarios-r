@@ -47,7 +47,7 @@
                     <td>{{ $computer->description ?? '-' }}</td>
                     <td>{{ $computer->status === 'available' ? 'Disponible' : 'Reservado' }}</td>
                     <td>
-                        @if($computer->status === 'available' && in_array(auth()->user()->role, ['estudiante', 'alumno'], true))
+                        @if($computer->status === 'available' && auth()->user()->role === 'estudiante')
                             <form class="inline" method="POST" action="{{ route('reservations.reserve', $computer) }}">
                                 @csrf <button type="submit">Reservar</button>
                             </form>

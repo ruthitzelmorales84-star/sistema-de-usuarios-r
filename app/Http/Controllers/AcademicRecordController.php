@@ -30,7 +30,7 @@ class AcademicRecordController extends Controller
 
         $query = AcademicRecord::query();
 
-        if (in_array($activeRole, ['alumno', 'estudiante'], true)) {
+        if ($activeRole === 'estudiante') {
             $query->where(function ($q) use ($user) {
                 $q->where('user_id', $user?->id)
                     ->orWhere('student_email', $user?->email)
@@ -130,7 +130,7 @@ class AcademicRecordController extends Controller
         $profVerified = (bool) $request->session()->get('academic_2fa_verified', false);
 
         if ($userRole === 'admin') {
-            if (in_array($sessionRole, ['profesor', 'alumno', 'estudiante'], true)) {
+            if (in_array($sessionRole, ['profesor', 'estudiante'], true)) {
                 return $sessionRole;
             }
 
@@ -142,20 +142,20 @@ class AcademicRecordController extends Controller
                 return null;
             }
 
-            if (in_array($userRole, ['alumno', 'estudiante'], true)) {
+            if ($userRole === 'estudiante') {
                 return null;
             }
 
             return 'profesor';
         }
 
-        if (in_array($sessionRole, ['alumno', 'estudiante'], true)) {
-            if (in_array($userRole, ['alumno', 'estudiante'], true) || $userRole === null) {
+        if ($sessionRole === 'estudiante') {
+            if ($userRole === 'estudiante' || $userRole === null) {
                 return $sessionRole;
             }
         }
 
-        if (in_array($userRole, ['alumno', 'estudiante'], true)) {
+        if ($userRole === 'estudiante') {
             return $userRole;
         }
 

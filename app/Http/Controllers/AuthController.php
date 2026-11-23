@@ -16,21 +16,7 @@ class AuthController extends Controller
             session(['module_intended_url' => $request->query('intended')]);
         }
 
-        if (Auth::check()) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-        }
-
-        session()->forget([
-            'admin_2fa_code',
-            'admin_2fa_user_id',
-            'admin_2fa_expires_at',
-            'admin_2fa_verified',
-            'admin_2fa_intended_url',
-        ]);
-
-        return view('auth.login');
+        return redirect()->route('home');
     }
 
     public function login(Request $request)
@@ -40,7 +26,6 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $intendedUrl = session('module_intended_url') ?: route('products.index');
         $credentials['email'] = strtolower(trim($credentials['email']));
 
         if (! Auth::attempt($credentials)) {
@@ -50,6 +35,11 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+        $defaultUrl = $user->role === 'estudiante'
+            ? route('reservations.index')
+            : route('products.index');
+        $intendedUrl = session('module_intended_url')
+            ?: $request->session()->pull('url.intended', $defaultUrl);
 
         if ($user->role === 'admin') {
             Auth::logout();

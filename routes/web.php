@@ -22,9 +22,9 @@ Route::get('/sistema-administracion', function (Request $request) {
     }
 
     return view('modules.admin');
-})->name('modules.admin');
+})->middleware('role:admin')->name('modules.admin');
 
-Route::middleware('auth')->prefix('juego-multijugador')->name('multiplayer.')->group(function () {
+Route::middleware(['auth', 'role:jugador,admin'])->prefix('juego-multijugador')->name('multiplayer.')->group(function () {
     Route::get('/', [TicTacToeController::class, 'index'])->name('index');
     Route::post('/crear', [TicTacToeController::class, 'create'])->middleware('role:jugador,admin')->name('create');
     Route::post('/{game}/unirse', [TicTacToeController::class, 'join'])->middleware('role:jugador,admin')->name('join');
@@ -40,11 +40,21 @@ Route::middleware('auth')->prefix('juego-multijugador')->name('multiplayer.')->g
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/sistema-academico', [AcademicAccessController::class, 'chooseRole'])->name('modules.academic');
-    Route::post('/sistema-academico/alumno', [AcademicAccessController::class, 'enterStudent'])->name('academic.student.enter');
-    Route::get('/sistema-academico/profesor', [AcademicAccessController::class, 'showProfessorForm'])->name('academic.professor.form');
-    Route::post('/sistema-academico/profesor/enviar-codigo', [AcademicAccessController::class, 'sendProfessorCode'])->name('academic.professor.send');
-    Route::post('/sistema-academico/profesor/verificar', [AcademicAccessController::class, 'verifyProfessorCode'])->name('academic.professor.verify');
+    Route::get('/sistema-academico', [AcademicAccessController::class, 'chooseRole'])
+        ->middleware('role:admin,profesor,estudiante')
+        ->name('modules.academic');
+    Route::post('/sistema-academico/estudiante', [AcademicAccessController::class, 'enterStudent'])
+        ->middleware('role:admin,estudiante')
+        ->name('academic.student.enter');
+    Route::get('/sistema-academico/profesor', [AcademicAccessController::class, 'showProfessorForm'])
+        ->middleware('role:admin,profesor')
+        ->name('academic.professor.form');
+    Route::post('/sistema-academico/profesor/enviar-codigo', [AcademicAccessController::class, 'sendProfessorCode'])
+        ->middleware('role:admin,profesor')
+        ->name('academic.professor.send');
+    Route::post('/sistema-academico/profesor/verificar', [AcademicAccessController::class, 'verifyProfessorCode'])
+        ->middleware('role:admin,profesor')
+        ->name('academic.professor.verify');
 });
 
 Route::middleware(['auth', 'role:empleado,admin'])->prefix('productos')->name('products.')->group(function () {
@@ -66,25 +76,23 @@ Route::get('/verificacion-admin', [AuthController::class, 'showTwoFactorChalleng
 Route::post('/verificacion-admin', [AuthController::class, 'verifyTwoFactor'])->name('admin.2fa.verify');
 
 Route::middleware('auth')->prefix('reservaciones')->name('reservations.')->group(function () {
-    Route::get('/', [ComputerReservationController::class, 'index'])->name('index');
+    Route::get('/', [ComputerReservationController::class, 'index'])
+        ->middleware('role:admin,estudiante')
+        ->name('index');
     Route::middleware('role:admin')->group(function () {
         Route::post('/equipos', [ComputerReservationController::class, 'storeEquipment'])->name('equipment.store');
         Route::put('/equipos/{computer}', [ComputerReservationController::class, 'updateEquipment'])->name('equipment.update');
         Route::delete('/equipos/{computer}', [ComputerReservationController::class, 'destroyEquipment'])->name('equipment.destroy');
     });
-    Route::middleware('role:estudiante,alumno')->post('/equipos/{computer}/reservar', [ComputerReservationController::class, 'reserve'])->name('reserve');
-    Route::post('/{reservation}/cancelar', [ComputerReservationController::class, 'cancel'])->name('cancel');
+    Route::middleware('role:estudiante')->post('/equipos/{computer}/reservar', [ComputerReservationController::class, 'reserve'])->name('reserve');
+    Route::post('/{reservation}/cancelar', [ComputerReservationController::class, 'cancel'])
+        ->middleware('role:admin,estudiante')
+        ->name('cancel');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboards.admin');
-    })->name('dashboard');
-});
-
-Route::middleware(['auth', 'role:empleado,admin'])->prefix('empleado')->name('empleado.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboards.empleado');
     })->name('dashboard');
 });
 
@@ -98,7 +106,7 @@ Route::get('/sistema-usuarios', function (Request $request) {
     }
 
     return view('modules.users');
-})->name('modules.users');
+})->middleware(['auth', 'role:empleado,admin'])->name('modules.users');
 
 Route::get('/users', function (Request $request) {
     if (! Auth::check()) {
@@ -144,7 +152,7 @@ Route::middleware('auth')->get('/academic', function (Request $request) {
         return app(AcademicRecordController::class)->index($request);
     }
 
-    if ($sessionRole === 'alumno' || in_array($userRole, ['profesor', 'alumno', 'estudiante'], true)) {
+    if ($sessionRole === 'estudiante' || in_array($userRole, ['profesor', 'estudiante'], true)) {
         return app(AcademicRecordController::class)->index($request);
     }
 

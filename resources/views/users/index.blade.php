@@ -183,7 +183,9 @@
                         @if(in_array(auth()->user()?->role, ['admin', 'empleado'], true))
                             <td>
                                 <div class="actions-group">
-                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">Editar</a>
+                                    @if(auth()->user()?->role === 'admin' || $user->role !== 'admin')
+                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">Editar</a>
+                                    @endif
                                     @if(auth()->user()?->role === 'admin')
                                         <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar/deshabilitar este usuario?');">
                                             @csrf

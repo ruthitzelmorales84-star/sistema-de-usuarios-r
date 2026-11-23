@@ -110,19 +110,25 @@
 
             @php
                 $selectedRole = old('role', $user->role);
-                $roles = ['admin', 'empleado', 'profesor', 'alumno', 'estudiante', 'jugador'];
-                if ($selectedRole && ! in_array($selectedRole, $roles, true)) {
-                    $roles[] = $selectedRole;
-                }
+                $isEmployeeEditingOwnAccount = auth()->user()->role === 'empleado'
+                    && (int) auth()->id() === (int) $user->id;
+                $roles = auth()->user()->role === 'admin'
+                    ? ['admin', 'empleado', 'profesor', 'estudiante', 'jugador']
+                    : ['empleado', 'profesor', 'estudiante', 'jugador'];
             @endphp
 
             <div class="form-group">
                 <label for="role">Rol</label>
-                <select id="role" name="role" required>
-                    @foreach ($roles as $roleOption)
-                        <option value="{{ $roleOption }}" @selected($selectedRole === $roleOption)>{{ $roleOption }}</option>
-                    @endforeach
-                </select>
+                @if ($isEmployeeEditingOwnAccount)
+                    <input type="text" value="{{ $user->role }}" disabled>
+                    <input type="hidden" name="role" value="{{ $user->role }}">
+                @else
+                    <select id="role" name="role" required>
+                        @foreach ($roles as $roleOption)
+                            <option value="{{ $roleOption }}" @selected($selectedRole === $roleOption)>{{ $roleOption }}</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <div class="form-group">

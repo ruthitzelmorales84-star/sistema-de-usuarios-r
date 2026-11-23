@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Administrador', 'email' => 'admin@example.com', 'role' => 'admin'],
             ['name' => 'Empleado', 'email' => 'empleado@example.com', 'role' => 'empleado'],
             ['name' => 'Profesor', 'email' => 'profesor@example.com', 'role' => 'profesor'],
-            ['name' => 'Alumno', 'email' => 'alumno@example.com', 'role' => 'alumno'],
+            ['name' => 'Estudiante', 'email' => 'alumno@example.com', 'role' => 'estudiante'],
             ['name' => 'Estudiante', 'email' => 'estudiante@example.com', 'role' => 'estudiante'],
             ['name' => 'Jugador', 'email' => 'jugador@example.com', 'role' => 'jugador'],
         ];

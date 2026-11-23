@@ -41,6 +41,25 @@ class UserController extends Controller
         return null;
     }
 
+    /**
+     * @return array<string>
+     */
+    private function allowedRolesForCurrentUser(): array
+    {
+        if (Auth::user()?->role === 'admin') {
+            return ['admin', 'empleado', 'profesor', 'estudiante', 'jugador'];
+        }
+
+        return ['empleado', 'profesor', 'estudiante', 'jugador'];
+    }
+
+    private function ensureCanEditUser(User $target): void
+    {
+        if (Auth::user()?->role === 'empleado' && $target->role === 'admin') {
+            abort(403, 'Un empleado no puede modificar cuentas de administrador.');
+        }
+    }
+
     private function recordMovement(Request $request, string $action, string $description): void
     {
         $actor = Auth::user()?->name ?? 'Sistema';
@@ -116,7 +135,7 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->whereNull('deleted_at'),
             ],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'empleado', 'profesor', 'alumno', 'estudiante', 'jugador'])],
+            'role' => ['required', Rule::in($this->allowedRolesForCurrentUser())],
         ]);
 
         $createdUser = User::create($validated);
@@ -142,6 +161,8 @@ class UserController extends Controller
             return $guardRedirect;
         }
 
+        $this->ensureCanEditUser($user);
+
         return view('users.edit', compact('user'));
     }
 
@@ -152,6 +173,12 @@ class UserController extends Controller
             return $guardRedirect;
         }
 
+        $this->ensureCanEditUser($user);
+
+        $allowedRoles = (int) Auth::id() === (int) $user->id && Auth::user()?->role === 'empleado'
+            ? [$user->role]
+            : $this->allowedRolesForCurrentUser();
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -161,7 +188,7 @@ class UserController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id)->whereNull('deleted_at'),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['admin', 'empleado', 'profesor', 'alumno', 'estudiante', 'jugador'])],
+            'role' => ['required', Rule::in($allowedRoles)],
         ]);
 
         $oldName = $user->name;

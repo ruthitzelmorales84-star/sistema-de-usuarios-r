@@ -32,7 +32,7 @@ class AcademicAccessController extends Controller
 
         $userRole = $request->user()?->role;
 
-        return in_array($userRole, ['alumno', 'estudiante'], true);
+        return $userRole === 'estudiante';
     }
 
     public function chooseRole(Request $request)
@@ -47,10 +47,10 @@ class AcademicAccessController extends Controller
     public function enterStudent(Request $request)
     {
         if ($this->isProfessorLocked($request)) {
-            abort(403, 'Como profesor no puedes cambiar al rol de alumno.');
+            abort(403, 'Como profesor no puedes cambiar al rol de estudiante.');
         }
 
-        $request->session()->put('academic_access_role', 'alumno');
+        $request->session()->put('academic_access_role', 'estudiante');
         $request->session()->forget(['academic_2fa_code', 'academic_2fa_email', 'academic_2fa_verified']);
 
         return redirect()->route('academic.index');
@@ -59,7 +59,7 @@ class AcademicAccessController extends Controller
     public function showProfessorForm(Request $request)
     {
         if ($this->isStudentLocked($request)) {
-            abort(403, 'Como alumno no puedes acceder al rol de profesor.');
+            abort(403, 'Como estudiante no puedes acceder al rol de profesor.');
         }
 
         return view('academic.professor-verify', [
@@ -71,7 +71,7 @@ class AcademicAccessController extends Controller
     public function sendProfessorCode(Request $request)
     {
         if ($this->isStudentLocked($request)) {
-            abort(403, 'Como alumno no puedes acceder al rol de profesor.');
+            abort(403, 'Como estudiante no puedes acceder al rol de profesor.');
         }
         if (! $this->isAdmin($request) && $request->user()?->role !== 'profesor') {
             abort(403, 'Solo profesores y administradores pueden verificar este rol.');
@@ -104,7 +104,7 @@ class AcademicAccessController extends Controller
     public function verifyProfessorCode(Request $request)
     {
         if ($this->isStudentLocked($request)) {
-            abort(403, 'Como alumno no puedes acceder al rol de profesor.');
+            abort(403, 'Como estudiante no puedes acceder al rol de profesor.');
         }
 
         $data = $request->validate([

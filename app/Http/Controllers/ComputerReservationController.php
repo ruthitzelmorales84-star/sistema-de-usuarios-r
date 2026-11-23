@@ -66,7 +66,7 @@ class ComputerReservationController extends Controller
 
     public function reserve(Request $request, Computer $computer)
     {
-        if (! in_array($request->user()->role, ['estudiante', 'alumno'], true)) {
+        if ($request->user()->role !== 'estudiante') {
             abort(403, 'Solo los estudiantes pueden reservar equipos.');
         }
 

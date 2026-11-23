@@ -101,12 +101,11 @@
             <div class="field">
                 <label for="role">Rol</label>
                 <select id="role" name="role" required>
-                    <option value="empleado" {{ old('role') === 'empleado' ? 'selected' : '' }}>empleado</option>
-                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>admin</option>
-                    <option value="profesor" {{ old('role') === 'profesor' ? 'selected' : '' }}>profesor</option>
-                    <option value="alumno" {{ old('role') === 'alumno' ? 'selected' : '' }}>alumno</option>
-                    <option value="estudiante" {{ old('role') === 'estudiante' ? 'selected' : '' }}>estudiante</option>
-                    <option value="jugador" {{ old('role') === 'jugador' ? 'selected' : '' }}>jugador</option>
+                    @foreach (auth()->user()->role === 'admin'
+                        ? ['admin', 'empleado', 'profesor', 'estudiante', 'jugador']
+                        : ['empleado', 'profesor', 'estudiante', 'jugador'] as $role)
+                        <option value="{{ $role }}" @selected(old('role', 'empleado') === $role)>{{ $role }}</option>
+                    @endforeach
                 </select>
             </div>
 

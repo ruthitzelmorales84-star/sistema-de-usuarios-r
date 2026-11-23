@@ -91,7 +91,7 @@
             } elseif ($sessionRole && $sessionRole !== 'profesor') {
                 $currentRole = $sessionRole;
             } else {
-                $currentRole = $currentUser?->role ?? 'alumno';
+                $currentRole = $currentUser?->role ?? 'estudiante';
             }
         @endphp
 
