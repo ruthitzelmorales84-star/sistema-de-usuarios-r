@@ -163,7 +163,7 @@ class ComplianceTest extends TestCase
         $this->actingAs($student)
             ->from(route('reservations.index'))
             ->post(route('reservations.reserve', $computer))
-            ->assertRedirect(route('reservations.index'))
+            ->assertRedirect(route('reservations.index', ['section' => 'list']))
             ->assertSessionHas('success', 'Equipo reservado correctamente.');
 
         $this->assertDatabaseHas('computer_reservations', [

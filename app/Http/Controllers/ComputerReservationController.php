@@ -13,17 +13,24 @@ class ComputerReservationController extends Controller
     {
         $user = $request->user();
         $isAdmin = $user->role === 'admin';
+        $section = $request->query('section', 'reserve');
 
-        $computers = Computer::query()->with(['reservations.user'])->orderBy('name')->get();
+        abort_unless(in_array($section, ['reserve', 'list'], true), 404);
 
-        $reservations = $isAdmin
-            ? ComputerReservation::with(['computer', 'user'])->latest('reserved_at')->get()
-            : ComputerReservation::with('computer')
-                ->where('user_id', $user->id)
-                ->latest('reserved_at')
-                ->get();
+        $computers = $section === 'reserve'
+            ? Computer::query()->orderBy('name')->get()
+            : collect();
 
-        return view('reservations.index', compact('computers', 'reservations', 'isAdmin'));
+        $reservations = $section === 'list'
+            ? ($isAdmin
+                ? ComputerReservation::with(['computer', 'user'])->latest('reserved_at')->get()
+                : ComputerReservation::with(['computer', 'user'])
+                    ->where('user_id', $user->id)
+                    ->latest('reserved_at')
+                    ->get())
+            : collect();
+
+        return view('reservations.index', compact('computers', 'reservations', 'isAdmin', 'section'));
     }
 
     public function storeEquipment(Request $request)
@@ -32,7 +39,6 @@ class ComputerReservationController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'location' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
         ]);
 
@@ -47,7 +53,6 @@ class ComputerReservationController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'location' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
         ]);
 
@@ -87,7 +92,9 @@ class ComputerReservationController extends Controller
             $lockedComputer->update(['status' => 'reserved']);
         });
 
-        return back()->with('success', 'Equipo reservado correctamente.');
+        return redirect()
+            ->route('reservations.index', ['section' => 'list'])
+            ->with('success', 'Equipo reservado correctamente.');
     }
 
     public function cancel(Request $request, ComputerReservation $reservation)
