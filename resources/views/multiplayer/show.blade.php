@@ -68,6 +68,7 @@
             margin-bottom: 14px;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
 <div class="wrap">

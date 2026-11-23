@@ -14,6 +14,7 @@
         .card { background: #1f2937; padding: 16px; margin: 16px 0; border-radius: 8px; }
         .success { color: #86efac; } .error { color: #fca5a5; }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
 <main>

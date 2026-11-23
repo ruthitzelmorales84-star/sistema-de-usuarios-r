@@ -51,6 +51,7 @@
             color: #fecaca;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <main class="card">

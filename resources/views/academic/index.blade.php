@@ -76,6 +76,7 @@
             color: #c4b5fd;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <div class="container">

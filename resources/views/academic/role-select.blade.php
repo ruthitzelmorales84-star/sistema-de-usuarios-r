@@ -43,6 +43,7 @@
         .btn-student { background-color: #3730a3; color: #ffffff; }
         .btn-back { background-color: #2d2b3e; color: #e5e7eb; margin-top: 8px; }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <div class="card">

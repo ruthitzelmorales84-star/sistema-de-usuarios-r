@@ -82,6 +82,7 @@
             margin-bottom: 18px;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <div class="container">

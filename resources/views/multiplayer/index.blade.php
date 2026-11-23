@@ -91,6 +91,7 @@
         ul { list-style: none; }
         li { padding: 8px 0; border-bottom: 1px solid #2d2b3e; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
 <div class="wrap">

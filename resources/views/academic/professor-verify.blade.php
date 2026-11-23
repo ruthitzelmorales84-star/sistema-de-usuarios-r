@@ -75,6 +75,7 @@
         }
         hr { border: none; border-top: 1px solid #2e2c42; margin: 20px 0; }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <div class="card">

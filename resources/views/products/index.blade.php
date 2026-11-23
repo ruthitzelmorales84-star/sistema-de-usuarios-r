@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Productos</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    @include('components.minimal-theme')
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen py-8 px-4">
     <div class="max-w-7xl mx-auto space-y-6">

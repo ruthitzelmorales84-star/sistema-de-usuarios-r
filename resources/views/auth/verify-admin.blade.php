@@ -89,6 +89,7 @@
             font-size: 14px;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <div class="card">

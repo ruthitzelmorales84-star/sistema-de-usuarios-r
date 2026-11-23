@@ -148,6 +148,7 @@
             text-decoration: underline;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <div class="login-card">

@@ -43,6 +43,7 @@
             background: rgba(126, 34, 206, 0.18);
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <main class="card">

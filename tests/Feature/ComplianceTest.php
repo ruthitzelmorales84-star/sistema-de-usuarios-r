@@ -22,7 +22,28 @@ class ComplianceTest extends TestCase
             ->assertSee('Iniciar sesión')
             ->assertSee('name="email"', false)
             ->assertSee('name="password"', false)
+            ->assertSee('--surface-raised')
             ->assertDontSee('Reservación de equipos');
+    }
+
+    public function test_login_does_not_redirect_a_player_to_a_requested_unauthorized_module(): void
+    {
+        $player = User::factory()->create([
+            'role' => 'jugador',
+            'password' => Hash::make('password'),
+        ]);
+
+        $this->withSession([
+            'module_intended_url' => route('products.index'),
+            'url.intended' => route('products.index'),
+        ])
+            ->post(route('login.attempt'), [
+                'email' => $player->email,
+                'password' => 'password',
+            ])
+            ->assertRedirect(route('home'));
+
+        $this->assertAuthenticatedAs($player);
     }
 
     public function test_login_route_does_not_log_out_an_authenticated_employee(): void
@@ -90,11 +111,11 @@ class ComplianceTest extends TestCase
 
         $code = session('admin_2fa_code');
         $this->post('/verificacion-admin', ['code' => $code])
-            ->assertRedirect(route('products.index'));
+            ->assertRedirect(route('home'));
         $this->assertAuthenticatedAs($admin);
     }
 
-    public function test_student_login_defaults_to_reservations(): void
+    public function test_student_login_defaults_to_homepage(): void
     {
         $student = User::factory()->create([
             'role' => 'estudiante',
@@ -104,9 +125,24 @@ class ComplianceTest extends TestCase
         $this->post(route('login.attempt'), [
             'email' => $student->email,
             'password' => 'password',
-        ])->assertRedirect(route('reservations.index'));
+        ])->assertRedirect(route('home'));
 
         $this->assertAuthenticatedAs($student);
+    }
+
+    public function test_player_login_defaults_to_homepage(): void
+    {
+        $player = User::factory()->create([
+            'role' => 'jugador',
+            'password' => Hash::make('password'),
+        ]);
+
+        $this->post(route('login.attempt'), [
+            'email' => $player->email,
+            'password' => 'password',
+        ])->assertRedirect(route('home'));
+
+        $this->assertAuthenticatedAs($player);
     }
 
     public function test_student_can_view_and_reserve_an_available_computer(): void

@@ -141,6 +141,7 @@
             background: rgba(147, 51, 234, 0.32);
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     <main class="panel">

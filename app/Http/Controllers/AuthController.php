@@ -10,12 +10,8 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
-    public function showLogin(Request $request)
+    public function showLogin()
     {
-        if ($request->filled('intended')) {
-            session(['module_intended_url' => $request->query('intended')]);
-        }
-
         return redirect()->route('home');
     }
 
@@ -35,11 +31,7 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $defaultUrl = $user->role === 'estudiante'
-            ? route('reservations.index')
-            : route('products.index');
-        $intendedUrl = session('module_intended_url')
-            ?: $request->session()->pull('url.intended', $defaultUrl);
+        $intendedUrl = route('home');
 
         if ($user->role === 'admin') {
             Auth::logout();
@@ -80,6 +72,7 @@ class AuthController extends Controller
                 'admin_2fa_user_id',
                 'admin_2fa_expires_at',
                 'admin_2fa_intended_url',
+                'module_intended_url',
             ]);
 
             return redirect()->route('login')->withErrors([
@@ -114,7 +107,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        $intendedUrl = $request->session()->get('admin_2fa_intended_url', route('admin.dashboard'));
+        $intendedUrl = $request->session()->get('admin_2fa_intended_url', route('home'));
         $request->session()->forget([
             'admin_2fa_code',
             'admin_2fa_user_id',
@@ -138,7 +131,6 @@ class AuthController extends Controller
             'admin_2fa_expires_at',
             'admin_2fa_verified',
             'admin_2fa_intended_url',
-            'module_intended_url',
         ]);
 
         return redirect()->route('login');

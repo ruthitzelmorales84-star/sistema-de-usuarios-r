@@ -119,6 +119,7 @@
             color: #ddd6fe;
         }
     </style>
+    @include('components.minimal-theme')
 </head>
 <body>
     @php
